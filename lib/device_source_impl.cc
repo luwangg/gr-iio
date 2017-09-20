@@ -108,17 +108,18 @@ namespace gr {
 
     void device_source_impl::set_buffer_size(unsigned int _buffer_size)
     {
-	    boost::unique_lock<boost::mutex> lock(iio_mutex);
+            bool createBuffer = false;
+            if(buf && this->buffer_size != _buffer_size) {
+                createBuffer = true;
+            }
 
-	    if (buf && this->buffer_size != _buffer_size) {
-		iio_buffer_destroy(buf);
+            if(createBuffer)
+                stop();
 
-		buf = iio_device_create_buffer(dev, _buffer_size, false);
-		if (!buf)
-			throw std::runtime_error("Unable to create buffer!\n");
-	    }
+            this->buffer_size = _buffer_size;
 
-	    this->buffer_size = _buffer_size;
+            if(createBuffer)
+                start();
     }
 
     void device_source_impl::set_timeout_ms(unsigned long _timeout)
